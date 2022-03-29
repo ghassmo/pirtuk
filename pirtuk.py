@@ -115,7 +115,6 @@ def print_progress_bar(total, current):
 
 
 def show_books(rows, progress_bar):
-    rows = list(rows)
 
     if len(rows) == 0:
         return
@@ -138,7 +137,7 @@ def show_books(rows, progress_bar):
 
 
 def find_free_id(cursor):
-    bk_ids = cursor.execute("SELECT book_id, title  FROM books")
+    bk_ids = cursor.execute("SELECT book_id, title  FROM books").fetchall()
     bk_ids = [row[0] for row in bk_ids]
     for i in itertools.count():
         if i not in bk_ids:
@@ -161,7 +160,7 @@ def books(cursor, progress_bar, state=BookState.OPEN, category=None):
         rows = cursor.execute(
             "SELECT * FROM books WHERE state=?", (state.value,)
         )
-    show_books(rows, progress_bar)
+    show_books(rows.fetchall(), progress_bar)
 
 
 def add(cursor, title, pages, category):
@@ -179,7 +178,7 @@ def add(cursor, title, pages, category):
                     start_date, \
                     finish_date)\
                     VALUES(?,?,?,?,?,?,?,?)",
-        book
+        book,
     )
 
 
@@ -194,7 +193,7 @@ def set_state(cursor, book_id, state):
 def get_book_track(cursor, book_id):
     book_tracks = cursor.execute(
         "SELECT date, pages from book_track WHERE book_id=?", (book_id,)
-    )
+    ).fetchall()
 
     for bt in book_tracks:
         print(bt)
@@ -202,25 +201,25 @@ def get_book_track(cursor, book_id):
 
 def inc(cursor, book_id, pages):
     book = cursor.execute(
-        "SELECT pages, current_page, state from books WHERE book_id=?", (book_id,)
+        "SELECT pages, current_page, state from books WHERE book_id=?",
+        (book_id,),
     ).fetchone()
 
     pages = int(pages)
 
-    if not  book or pages <= 0:
+    if not book or pages <= 0:
         return
-
 
     book_pages = int(book[0])
     state = parse_state(int(book[2]))
 
     if state != BookState.OPEN:
-        return 
+        return
 
     current_page = pages + int(book[1])
 
     if current_page > book_pages:
-        return 
+        return
 
     cursor.execute(
         "UPDATE books SET current_page=? WHERE book_id=? AND state=?",
@@ -237,8 +236,8 @@ def inc(cursor, book_id, pages):
 
 
 def delete(cursor, book_id):
-    cursor.execute("DELETE FROM book_track WHERE book_id=?", (book_id, ))
-    cursor.execute("DELETE FROM books WHERE book_id=?", (book_id, ))
+    cursor.execute("DELETE FROM book_track WHERE book_id=?", (book_id,))
+    cursor.execute("DELETE FROM books WHERE book_id=?", (book_id,))
 
 
 def main():
