@@ -291,7 +291,7 @@ def main():
     args = parser.parse_args()
 
     # Init db
-    path = os.path.join(os.path.expanduser("~"), ".config/pirtuk/books.db")
+    path = os.path.join(os.path.expanduser("~"), ".local/share/pirtuk/books.db")
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
     cursor.execute(DB_ENABLE_FOREIGN_KEYS)
